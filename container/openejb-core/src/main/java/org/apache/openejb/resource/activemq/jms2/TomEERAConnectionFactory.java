@@ -21,10 +21,11 @@ import org.apache.activemq.ra.ActiveMQConnectionRequestInfo;
 import org.apache.activemq.ra.ActiveMQManagedConnectionFactory;
 
 import javax.jms.JMSContext;
-import javax.jms.Session;
 import javax.resource.spi.ConnectionManager;
 
 public class TomEERAConnectionFactory extends ActiveMQConnectionFactory {
+    private static final long serialVersionUID = 1L;
+
     public TomEERAConnectionFactory(final ActiveMQManagedConnectionFactory factory, final ConnectionManager manager,
                                     final ActiveMQConnectionRequestInfo connectionRequestInfo) {
         super(factory, manager, connectionRequestInfo);
@@ -32,21 +33,52 @@ public class TomEERAConnectionFactory extends ActiveMQConnectionFactory {
 
     @Override
     public JMSContext createContext() {
-        return new JMSContextImpl(this, Session.AUTO_ACKNOWLEDGE, null, null, false);
+        boolean inTx = JMS2.inTx();
+        int mode;
+        if (inTx) {
+            mode = -1;
+        } else {
+            mode = JMSContext.AUTO_ACKNOWLEDGE;
+        }
+        return new JMSContextImpl(this, mode, null, null, inTx);
     }
 
     @Override
     public JMSContext createContext(final int sessionMode) {
-        return new JMSContextImpl(this, sessionMode, null, null, false);
+        // https://docs.oracle.com/javaee/7/api/javax/jms/ConnectionFactory.html#createContext-int-
+        // In a Java EE web or EJB container, when there is an active JTA transaction in progress:
+        // The argument sessionMode is ignored. The session will participate in the JTA transaction
+        boolean inTx = JMS2.inTx();
+        int mode;
+        if (inTx) {
+          mode = -1;
+        } else {
+          mode = sessionMode;
+        }
+        return new JMSContextImpl(this, mode, null, null, inTx);
     }
 
     @Override
     public JMSContext createContext(final String userName, final String password) {
-        return new JMSContextImpl(this, Session.AUTO_ACKNOWLEDGE, userName, password, false);
+        boolean inTx = JMS2.inTx();
+        int mode;
+        if (inTx) {
+            mode = -1;
+        } else {
+            mode = JMSContext.AUTO_ACKNOWLEDGE;
+        }
+        return new JMSContextImpl(this, mode, userName, password, inTx);
     }
 
     @Override
     public JMSContext createContext(final String userName, final String password, final int sessionMode) {
-        return new JMSContextImpl(this, sessionMode, userName, password, false);
+        boolean inTx = JMS2.inTx();
+        int mode;
+        if (inTx) {
+          mode = -1;
+        } else {
+          mode = sessionMode;
+        }
+        return new JMSContextImpl(this, mode, userName, password, inTx);
     }
 }

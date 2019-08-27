@@ -41,6 +41,7 @@ public class TomEEManagedConnection extends ActiveMQManagedConnection {
 
     private final Collection<ManagedConnectionProxy> proxyConnections;
 
+    @SuppressWarnings("unchecked")
     public TomEEManagedConnection(final Subject subject, final ActiveMQConnection physicalConnection,
                                   final ActiveMQConnectionRequestInfo info) throws ResourceException {
         super(subject, physicalConnection, info);

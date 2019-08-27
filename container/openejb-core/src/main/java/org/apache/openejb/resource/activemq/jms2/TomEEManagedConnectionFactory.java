@@ -30,6 +30,8 @@ import javax.resource.spi.ManagedConnection;
 import javax.security.auth.Subject;
 
 public class TomEEManagedConnectionFactory extends ActiveMQManagedConnectionFactory {
+    private static final long serialVersionUID = 1L;
+
     @Override
     public Object createConnectionFactory(final ConnectionManager manager) throws ResourceException {
         return new TomEERAConnectionFactory(this, manager, getInfo());
